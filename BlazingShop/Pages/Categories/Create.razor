@@ -1,0 +1,52 @@
+﻿@page "/categories/create"
+@using BlazingShop.Models
+@using BlazingShop.Data
+@using Microsoft.EntityFrameworkCore
+@inject AppDbContext Context;
+@inject NavigationManager NavManager
+
+
+<h3>New product</h3>
+<EditForm Model="@model" OnValidSubmit="@HandleSubmit">
+    <DataAnnotationsValidator/>
+    <ValidationSummary />
+
+    <div class="mb-3">
+        <label for="Title" class="form-label">Title</label>
+        <InputText class="form-control" type="text" id="Title" @bind-Value="model.Title" />
+    </div>
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger" role="alert">
+            @errorMessage
+        </div>
+    }
+    <button class="btn btn-success" type="submit">SAVE</button>
+</EditForm>
+
+
+
+
+
+
+@code {
+    private Category model = new Category();
+    private string? errorMessage = null;
+
+
+    private async Task HandleSubmit()
+    {
+        try
+        {
+            await Context.Categories.AddAsync(model);
+
+            await Context.SaveChangesAsync();
+            NavManager.NavigateTo("/categories");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+    }
+
+}

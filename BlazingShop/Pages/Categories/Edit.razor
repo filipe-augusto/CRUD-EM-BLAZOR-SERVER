@@ -1,0 +1,66 @@
+﻿@page "/categories/edit/{id:int}"
+@using BlazingShop.Models
+@using BlazingShop.Data
+@using Microsoft.EntityFrameworkCore
+@inject AppDbContext Context;
+@inject NavigationManager NavManager
+
+
+<h1>@model?.Title</h1>
+
+<EditForm Model="@model" OnValidSubmit="@HandleSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="mb-3">
+        <label for="Title" class="form-label">Title</label>
+        <InputText class="form-control" type="text" id="Title" @bind-Value="model.Title" />
+    </div>
+
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger" role="alert">
+            @errorMessage
+        </div>
+    }
+
+    <button class="btn btn-success" type="submit">SAVE</button>
+</EditForm>
+
+
+@code{
+    [Parameter]
+    public int Id { get; set; }
+
+    private Category model = new();
+    private string? errorMessage = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        model = await Context.Categories.AsNoTracking().FirstOrDefaultAsync(x => x.Id == Id);
+    }
+
+    private async Task HandleSubmit()
+    {
+        try
+        {
+
+            var prod = await Context.Categories.FirstOrDefaultAsync(x => x.Id == Id);
+            if (prod is null)
+                throw new Exception("Categoria não encontrada");
+
+            prod.Title = model.Title;
+
+            Context.Categories.Update(prod);
+            await Context.SaveChangesAsync();
+            NavManager.NavigateTo("/categories");
+
+        }
+        catch (Exception ex)
+        {
+
+            errorMessage = ex.Message;
+        }
+    }
+
+}

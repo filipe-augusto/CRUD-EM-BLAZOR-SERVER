@@ -1,0 +1,60 @@
+﻿@page "/categories/delete/{Id:int}"
+@using BlazingShop.Models
+@using BlazingShop.Data
+@using Microsoft.EntityFrameworkCore
+@inject AppDbContext Context;
+@inject NavigationManager NavManager
+
+<h1>Delete @model?.Title?</h1>
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger" role="alert">
+        @errorMessage
+    </div>
+}
+
+<EditForm Model="@model" OnValidSubmit="@HandleSubmit">
+    <div class="mb-3">
+        <label for="Title" class="form-label">Title</label>
+        <InputText readonly class="form-control" type="text" id="Title" @bind-Value="model.Title" />
+    </div>
+
+    <button class="btn btn-danger" type="submit">DELETE</button>
+</EditForm>
+
+
+
+@code{
+    [Parameter]
+    public int Id { get; set; }
+
+    private Category model = new();
+
+    private string? errorMessage = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        model = await Context.Categories.AsNoTracking().FirstOrDefaultAsync(x => x.Id == Id);
+    }
+
+    private async Task HandleSubmit()
+    {
+        try
+        {
+            var cat = await Context.Categories.FirstOrDefaultAsync(x => x.Id == Id);
+
+            if (cat == null) throw new Exception("categoria não encontrada");
+            Context.Categories.Remove(cat);
+            await Context.SaveChangesAsync();
+
+            NavManager.NavigateTo("/categories");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+    }
+
+
+}
